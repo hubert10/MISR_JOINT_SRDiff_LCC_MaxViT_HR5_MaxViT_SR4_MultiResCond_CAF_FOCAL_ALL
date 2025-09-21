@@ -87,30 +87,30 @@ class SRDiffTrainer(Trainer):
             img, img_sr, labels, dates, hparams
         )
 
-        # Auxiliary losses
-        # The CE loss for the SITS classification branch is done at 1m GSD
-        aux_loss1 = self.criterion_sat(multi_outputs[2], labels_sr)
-        aux_loss2 = self.criterion_sat(multi_outputs[1], labels_sr)
-        aux_loss3 = self.criterion_sat(multi_outputs[0], labels_sr)
+        # # Auxiliary losses
+        # # The CE loss for the SITS classification branch is done at 1m GSD
+        # aux_loss1 = self.criterion_sat(multi_outputs[2], labels_sr)
+        # aux_loss2 = self.criterion_sat(multi_outputs[1], labels_sr)
+        # aux_loss3 = self.criterion_sat(multi_outputs[0], labels_sr)
 
         loss_main_sat = self.criterion_sat(sits_logits, labels_sr)
 
-        ce_sr_loss = self.loss_main_sat_weight * loss_main_sat + (
-            self.loss_aux_sat_weight * aux_loss1
-            + self.loss_aux_sat_weight * aux_loss2
-            + self.loss_aux_sat_weight * aux_loss3
-        )
+        # ce_sr_loss = self.loss_main_sat_weight * loss_main_sat + (
+        #     self.loss_aux_sat_weight * aux_loss1
+        #     + self.loss_aux_sat_weight * aux_loss2
+        #     + self.loss_aux_sat_weight * aux_loss3
+        # )
 
         total_loss = {} # aer-loss + sat-loss (sr-loss, aux-loss, ce-sits-loss)
         
         loss_aer = self.criterion_aer(aer_outputs, labels.long())
 
         # The CE loss for the SITS classification branch is done at 1.6m GSD
-        total_loss["sat_loss"] = hparams["loss_weights_aer_sat"][1] * (sum(losses.values()) + ce_sr_loss)
+        total_loss["sat_loss"] = hparams["loss_weights_aer_sat"][1] * (sum(losses.values()) + loss_main_sat)
         # The CE loss for the AER classification branch is done at 20cm GSD
         total_loss["aer_loss"] = hparams["loss_weights_aer_sat"][0] * loss_aer
 
-        losses["sr_loss"] = ce_sr_loss
+        losses["sr_loss"] = loss_main_sat
         losses["aer_loss"] = total_loss["aer_loss"]
 
         total_loss = sum(total_loss.values())
