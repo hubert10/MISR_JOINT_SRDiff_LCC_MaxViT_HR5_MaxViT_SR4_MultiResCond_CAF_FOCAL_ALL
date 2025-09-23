@@ -4,6 +4,7 @@ import torch
 import numpy as np
 import torch.nn as nn
 from trainer import Trainer
+import torch.nn.functional as F
 from utils.hparams import hparams
 from utils.utils import load_ckpt
 from models.diffsr_modules import Unet
@@ -83,23 +84,12 @@ class SRDiffTrainer(Trainer):
         )
 
         # for classification branches
-        sits_logits, multi_outputs, aer_outputs = self.model(
+        sits_logits, _, aer_outputs = self.model(
             img, img_sr, labels, dates, hparams
         )
 
-        # # Auxiliary losses
-        # # The CE loss for the SITS classification branch is done at 1m GSD
-        # aux_loss1 = self.criterion_sat(multi_outputs[2], labels_sr)
-        # aux_loss2 = self.criterion_sat(multi_outputs[1], labels_sr)
-        # aux_loss3 = self.criterion_sat(multi_outputs[0], labels_sr)
-
-        loss_main_sat = self.criterion_sat(sits_logits, labels_sr)
-
-        # ce_sr_loss = self.loss_main_sat_weight * loss_main_sat + (
-        #     self.loss_aux_sat_weight * aux_loss1
-        #     + self.loss_aux_sat_weight * aux_loss2
-        #     + self.loss_aux_sat_weight * aux_loss3
-        # )
+        sits_logits = F.interpolate(sits_logits, size=img.shape[2:], mode="bilinear")
+        loss_main_sat = self.criterion_sat(sits_logits, labels)
 
         total_loss = {} # aer-loss + sat-loss (sr-loss, aux-loss, ce-sits-loss)
         
@@ -107,6 +97,7 @@ class SRDiffTrainer(Trainer):
 
         # The CE loss for the SITS classification branch is done at 1.6m GSD
         total_loss["sat_loss"] = hparams["loss_weights_aer_sat"][1] * (sum(losses.values()) + loss_main_sat)
+        
         # The CE loss for the AER classification branch is done at 20cm GSD
         total_loss["aer_loss"] = hparams["loss_weights_aer_sat"][0] * loss_aer
 

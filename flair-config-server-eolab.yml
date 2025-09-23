@@ -20,7 +20,6 @@ outputs:
 
 # Fusion
 sat_patch_size: 64  # in [8, 112] and multiple of 8 
-
 loss_weights_aer_sat: [0.7, 0.3]
 loss_aux_sat_weight: 1.0
 loss_main_sat_weight: 1.0

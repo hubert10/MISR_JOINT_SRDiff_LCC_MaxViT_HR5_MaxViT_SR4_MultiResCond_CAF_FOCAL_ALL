@@ -577,3 +577,6 @@ if __name__ == "__main__":
     # Weighted by hparams["gray_value_px_loss_weight"].
     # Ensures that when downsampled, the SR images remain consistent with the observed LR sequence.
     # Preserves spectral fidelity and avoids hallucinations.
+
+
+    # scp -r nhgnkany@transfer.cluster.uni-hannover.de:/bigwork/nhgnkany/Results/MISR_JOINT_SRDiff_LCC_MaxViT_HR5_MaxViT_SR4_CAF_FOCAL_ALL/results/checkpoints/misr/srdiff_highresnet_ltae_ckpt/results_0_/ D:\kanyamahanga\Bigwork\MISR_JOINT_SRDiff_LCC_MaxViT_HR5_MaxViT_SR4_CAF_FOCAL_ALL
